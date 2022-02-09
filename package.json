@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node ./src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon ./src/index.ts"
+    "dev": "nodemon ./src/api/api.ts"
   },
   "keywords": [],
   "author": "",
@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@prisma/client": "^3.9.1",
+    "body-parser": "^1.19.1",
     "express": "^4.17.2",
     "mysql": "^2.18.1"
   }
