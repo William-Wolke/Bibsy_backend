@@ -1,12 +1,80 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "mysql"
-  url      = env("bibsy.local")
+  url      = env("DATABASE_URL")
 }
 
+//Personel section starts here
+
+model Administrators {
+  PID               String  @unique
+  AccessToLibrary   Boolean @default(false)
+  AccessToResturant Boolean @default(false)
+  AccessToUser      Boolean @default(false)
+  AccessToServer    Boolean @default(false)
+  ID                Staff   @relation(fields: [PID], references: [PID])
+}
+
+model Staff {
+  ID            Int             @id @default(autoincrement())
+  PID           String          @unique @default(cuid())
+  FirstName     String
+  LastName      String
+  Email         String
+  PhoneNumber   String
+  isPersonal    Boolean         @default(false)
+  Administrator Administrators?
+  BorrowDetails BorrowDetails[]
+  Restaurant    Restaurant[]
+}
+
+model Students {
+  ID            Int             @id @default(autoincrement())
+  PID           String          @unique @default(cuid())
+  FirstName     String
+  LastName      String
+  Email         String          @unique
+  PhoneNumber   String          @unique
+  BorrowDetails BorrowDetails[]
+  Restaurant    Restaurant[]
+}
+
+//Personel section ends here
+
+// Library borrowing system section starts here
+model Library {
+  ISBN          Int             @unique
+  BookName      String
+  Author        String
+  IsAvailable   Boolean
+  Quantity      Int
+  BorrowDetails BorrowDetails[]
+}
+
+model BorrowDetails {
+  ISBN     Int    @unique
+  Staff    String
+  Student  String
+  BookName String
+
+  BorrowedFrom Staff    @relation(fields: [Staff], references: [PID])
+  BorrowedTo   Students @relation(fields: [Student], references: [PID])
+  BorrowedDate DateTime
+  BorrowID     Library  @relation(fields: [ISBN], references: [ISBN])
+}
+
+//Library borrowing system section ends here
+
+//Restaurant system section starts here
+
+model Restaurant {
+  ID         Students @relation(fields: [PID], references: [ID])
+  PID        Int      @unique
+  isPersonal Staff?   @relation(fields: [staffID], references: [ID])
+
+  HaveEaten Boolean
+  staffID   Int?
+}
