@@ -9,7 +9,7 @@ datasource db {
 
 //Personel section starts here
 
-model Administrators {
+model Permissions {
   PID               String  @unique
   AccessToLibrary   Boolean @default(false)
   AccessToResturant Boolean @default(false)
@@ -21,12 +21,12 @@ model Administrators {
 model Staff {
   ID            Int             @id @default(autoincrement())
   PID           String          @unique @default(cuid())
-  FirstName     String          
+  FirstName     String
   LastName      String
   Email         String          @unique
   PhoneNumber   String          @unique
   isPersonal    Boolean         @default(false)
-  Administrator Administrators?
+  Permissions   Permissions?
   BorrowDetails BorrowDetails[]
   Restaurant    Restaurant[]
 }
@@ -46,8 +46,8 @@ model Students {
 
 // Library borrowing system section starts here
 model Library {
-  ISBN          BigInt             @unique
-  BookName      String             @unique
+  ISBN          BigInt          @unique
+  BookName      String          @unique
   Author        String
   IsAvailable   Boolean
   Quantity      Int
@@ -55,9 +55,9 @@ model Library {
 }
 
 model BorrowDetails {
-  ISBN     BigInt    @unique
-  Staff    String
-  Student  String
+  ISBN    BigInt @unique
+  Staff   String
+  Student String
 
   BorrowedFrom Staff    @relation(fields: [Staff], references: [PID])
   BorrowedTo   Students @relation(fields: [Student], references: [PID])
