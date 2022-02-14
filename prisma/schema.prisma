@@ -58,6 +58,7 @@ model BorrowDetails {
   ISBN    BigInt @unique
   Staff   String
   Student String
+  
 
   BorrowedFrom Staff    @relation(fields: [Staff], references: [PID])
   BorrowedTo   Students @relation(fields: [Student], references: [PID])
