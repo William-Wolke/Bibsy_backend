@@ -3,10 +3,20 @@ const express = require('express');
 import { Request, Response } from 'express';
 const bodyParser = require('body-parser');
 const app = express();
-import { PrismaClient, Prisma } from '@prisma/client';
+import { PrismaClient, Prisma, BorrowDetails, Library, Students } from '@prisma/client';
+import {ConvertBigIntObjects, ConvertBigIntObject} from '../bigIntConvert';
 const prisma = new PrismaClient();
-import JSONbig from 'json-bigint';
 app.use(bodyParser.urlencoded({ extended: true}));
+
+//Types
+
+type NumberLibrary = {
+    ISBN: Number;
+    BookName: String;
+    Author: String;
+    IsAvailable: Boolean;
+    Quantity: Number;
+}
 
 //Handlers
 
@@ -21,36 +31,50 @@ app.listen(3001, () => {
 //     IsAvailable:boolean|undefined;
 //     Quantity:number|undefined;
 // }
-app.get('/books', async (req: Request, res: Response) => {
+app.get('/book', async (req: Request, res: Response) => {
     console.log("hej");
+    let numIsbn = Number(req.body.isbn);
+    let bigIntIsbn = BigInt(numIsbn);
    
-    const books = await prisma.library.findMany()
-
-    .then((böcker) => {
-        console.log(böcker);
-        //BigInt is not supported by json we have to convert to Number and then to object again... 🤬 
-        const ISBN = parseInt((böcker[0].ISBN).toString());
-        const BookName = böcker[0].BookName;
-        const Author = böcker[0].Author;
-        const IsAvailable = böcker[0].IsAvailable;
-        const Quantity = (böcker[0].Quantity);
-        //Assembel object again
-        const bookinfo = {
-            ISBN: ISBN,
-            BookName: BookName,
-            Author: Author,
-            IsAvailable: IsAvailable,
-            Quantity: Quantity
+    const books = await prisma.library.findUnique({
+        where: {
+            ISBN: bigIntIsbn
         }
-        res.status(200).json(bookinfo);
+    })
+    .then((book) => {
+        console.log(book);
+        //BigInt is not supported by json we have to convert to Number and then to object again... 🤬 
+        let convertedBooks = ConvertBigIntObject(book);
+
+        res.status(200).json(convertedBooks);
     })
     .catch((e) => {
         res.status(500).send(e.message);
     });
 });
 
-app.get('/students', (req, res) => {
-    const members = prisma.students.findMany()
+app.get('/books', async (req: Request, res: Response) => {
+    console.log("hej");
+    let datum: Date = new Date();
+    let month = new Date().getMonth() + 1;
+    console.log(datum.getFullYear() + "/" + month + "/" +  datum.getDate());
+   
+    const books = await prisma.library.findMany()
+
+    .then((böcker) => {
+        console.log(böcker);
+        //BigInt is not supported by json we have to convert to Number and then to object again... 🤬 
+        let convertedBooks = ConvertBigIntObjects(böcker);
+
+        res.status(200).json(convertedBooks);
+    })
+    .catch((e) => {
+        res.status(500).send(e.message);
+    });
+});
+
+app.get('/students', async (req, res) => {
+    const members = await prisma.students.findMany()
     .then((members) => {
         res.status(200).send(members);
     })
@@ -78,100 +102,151 @@ app.get('/students', (req, res) => {
 //     });
 // });
 
-// app.post('/updateStudent',(req, res) => {
+app.post('/updateStudent',(req, res) => {
     
-//     //pass in data
-//     const updateUser = prisma.students.update({
-//         where: {
-//             Email: req.body.email
-//         },
-//         data: {
-//             FirstName: req.body.firstName,
-//             LastName: req.body.lastName,
-            
-//         }
-//     })
-//     .then(() => {
-//         res.redirect('/');
-//     })
-//     .catch(() => {
-//         res.redirect('/');
-//     });
+    //pass in data
+    const updateUser = prisma.students.update({
+        where: {
+            Email: req.body.email
+        },
+        data: {
+            FirstName: req.body.firstName,
+            LastName: req.body.lastName,
+            Email: req.body.email,
+            PhoneNumber: req.body.phone,
+        },
+    })
+    .then(() => {
+        res.redirect('/');
+    })
+    .catch(() => {
+        res.redirect('/');
+    });
 
-// });
+});
 
-// app.post('/updateBook',(req, res) => {
-//     //pass in data
-//     const updateUser = prisma.books.update({
-//         where: {
-//             isbn: req.email
-//         },
-//         data: {
-//             name: req.name
-//         }
-//     })
-//     .then(() => {
-//         res.redirect('/');
-//     })
-//     .catch(() => {
-//         res.redirect('/');
-//     });
+app.post('/updateBook',(req, res) => {
+    let ISBN = BigInt(parseInt((req.body.isbn).toString()));
+    let ISBN2 = BigInt(parseInt((req.body.isbn2).toString()));
+    let Quantity = parseInt((req.body.amount).toString());
+    let isAvailable = false;
 
-// });
+    if(Quantity){
+        isAvailable = true; 
+    }
+    else {
+        isAvailable = false;
+    }
+    //pass in data
+    const updateUser = prisma.library.update({
+        where: {
+            ISBN: ISBN
+        },
+        data: {
+            ISBN: ISBN2,
+            BookName: req.body.bookName,
+            Author: req.body.author,
+            Quantity: Quantity,
+            IsAvailable: isAvailable,
+        },
+    })
+    .then(() => {
+        res.redirect('/');
+    })
+    .catch(() => {
+        res.redirect('/');
+    });
+
+});
 
 // app.post('/borrow',(req, res) => {
-//     let isbn = req.body.isbn;
 //     let ntiId = req.body.ntiId;
-//     let bookName = req.body.bookName;
-//     let author = req.body.author;
-//     let isAvailable = req.body.isAvailable;
-//     let librarianId = req.body.librarian;
+//     let staffId = req.body.staff;
 //     let studentId = req.body.borrower;
-    
-//     let borrowBook = {
-//         ISBN: isbn,
-//         BookName: bookName,
-//         Author: author,
-//         IsAvailable: isAvailable,
+//     let datum: Date = new Date();
 
+//     let borrowBook = {
+//         ntiID: ntiId,
+//         staffID: staffId,
+//         studentID: studentId,
+//         borrowedDate: datum,
 //     }
 
 //     const borrow = prisma.borrowDetails.create({
-//         data: borrowBook
+//         data: {borrowBook}
 //     })
 
 //     res.redirect('/');
 // });
 
-// app.post('/registerBook',(req, res) => {
-//     let isbn = req.body.isbn;
-//     let author = req.body.author;
-//     let published = req.body.published;
-//     let title = req.body.title;
-//     let amount = req.body.amount;
+app.post('/registerBook', async(req, res) => {
+    let ISBN = BigInt(parseInt((req.body.isbn).toString()));
+    let Quantity = parseInt((req.body.amount).toString());
+    let isAvailable = false;
 
-//     res.redirect('/');
-// });
+    if(Quantity){
+        isAvailable = true; 
+    }
+    else {
+        isAvailable = false;
+    }
 
-// app.post('/registerUser',(req, res) => {
-//     let id = req.body.id;
-//     let firstName = req.body.firstName;
-//     let lastName = req.body.lastName;
-//     let email = req.body.email;
-//     let pass = req.body.pass;
+    let book = {
+        ISBN: ISBN,
+        BookName: req.body.title,
+        Author: req.body.author,
+        IsAvailable: isAvailable,
+        Quantity: Quantity,
+
+    }
+    console.log(book);
+
+    const Book = await prisma.library.create({
+        data: book,
+      }) 
+
+    res.redirect('/');
+});
+
+app.post('/registerStudent', async(req:Request, res:Response) => {
+
+    let student = {
+        FirstName: req.body.FirstName,
+        LastName: req.body.LastName,
+        Email: req.body.Email,
+        PhoneNumber: req.body.PhoneNumber,
+    }
     
+    console.log(student);
 
-//     res.redirect('/');
-// });
+    const Student = await prisma.students.create({
+        data: student,
+      }) 
 
-// app.post('/deleteUser',(req, res) => {
-    
+    res.redirect('/');
+    });
 
-//     res.redirect('/');
-// });
+app.post('/deleteStudent', async (req, res) => {
+    console.log(req.body.email);
 
-// app.post('/deleteBook',(req, res) => {
-    
+    const deleteStudent = await prisma.students.delete({
+        where: {
+            Email: req.body.email,
+        },
+    });
 
-//     res.redirect('/');
-// });
+    res.redirect('/');
+});
+
+app.post('/deleteBook', async (req, res) => {
+    let ISBN = BigInt(parseInt((req.body.isbn).toString()));
+
+    const deleteBook = await prisma.library.delete({
+        where: {
+            ISBN: ISBN,
+        },
+    });
+
+    res.redirect('/');
+});
+

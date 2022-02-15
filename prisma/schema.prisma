@@ -76,16 +76,7 @@ model Library {
   BorrowDetails BorrowDetails[]
 }
 
-model BorrowDetails {
-  Student_ID String
-  Staff_ID   String
-  NTI_ID     Int      @unique
-  Date       DateTime
 
-  NTI_NTI_S      Library  @relation(fields: [NTI_ID], references: [NTI_s_ID])
-  NTI_ID_Staff   Staff    @relation(fields: [Staff_ID], references: [PID])
-  NTI_ID_Student Students @relation(fields: [Student_ID], references: [PID])
-}
 
 //Library borrowing system section ends here
 
