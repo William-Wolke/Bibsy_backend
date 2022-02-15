@@ -58,12 +58,20 @@ model Template {
 }
 
 model Library {
-  NTI_s_ID Int    @unique
-  ItemName String @unique
-  ISBN     BigInt @id @unique
+  NTI_s_ID     Int      @unique
+  ItemName     String   @unique
+  ISBN         BigInt   @id @unique
+  Title        String   @unique
+  Author       String
+  Language     String
+  Publisher    String
+  Description  String
+  Cover        String   @unique
+  Pages        Int
+  Publish_Date DateTime
 
   NameBookName Template @relation(fields: [ItemName], references: [Name], name: "NameBookName")
-  templateID   Int?
+  TemplateID   Int?
 
   BorrowDetails BorrowDetails[]
 }
@@ -93,11 +101,7 @@ model Restaurant {
 }
 
 model Login {
-  UserName    String  @unique
-  PassWord    String
-  PID         String  @unique
-
+  UserName String @unique
+  PassWord String
+  PID      String @unique
 }
-
-
-

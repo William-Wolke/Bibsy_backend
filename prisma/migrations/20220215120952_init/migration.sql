@@ -58,11 +58,21 @@ CREATE TABLE `Library` (
     `NTI_s_ID` INTEGER NOT NULL,
     `ItemName` VARCHAR(191) NOT NULL,
     `ISBN` BIGINT NOT NULL,
-    `templateID` INTEGER NULL,
+    `Title` VARCHAR(191) NOT NULL,
+    `Author` VARCHAR(191) NOT NULL,
+    `Language` VARCHAR(191) NOT NULL,
+    `Publisher` VARCHAR(191) NOT NULL,
+    `Description` VARCHAR(191) NOT NULL,
+    `Cover` VARCHAR(191) NOT NULL,
+    `Pages` INTEGER NOT NULL,
+    `Publish_Date` DATETIME(3) NOT NULL,
+    `TemplateID` INTEGER NULL,
 
     UNIQUE INDEX `Library_NTI_s_ID_key`(`NTI_s_ID`),
     UNIQUE INDEX `Library_ItemName_key`(`ItemName`),
     UNIQUE INDEX `Library_ISBN_key`(`ISBN`),
+    UNIQUE INDEX `Library_Title_key`(`Title`),
+    UNIQUE INDEX `Library_Cover_key`(`Cover`),
     PRIMARY KEY (`ISBN`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
