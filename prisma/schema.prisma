@@ -1,63 +1,89 @@
+//Client used to access data through prisma.
 generator client {
   provider = "prisma-client-js"
 }
 
+//The source details such as type & destination. These are defined in the enviroment file.
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
 //Personel section starts here
-
 model Permissions {
+  //PID is the name of the perm to be created, everything else are bools for perms.
   PID               String  @unique
   AccessToLibrary   Boolean @default(false)
   AccessToResturant Boolean @default(false)
   AccessToUser      Boolean @default(false)
   AccessToServer    Boolean @default(false)
-  ID                Staff   @relation(fields: [PID], references: [PID])
+
+  //Relation points towards "Permissions" PID and takes the value of PID from the "Staff" model
+  ID  Staff   @relation(fields: [PID], references: [PID])
 }
 
+//Model for managing staff members, such as teacher, admins, principals within the system.
 model Staff {
+  //Field 'ID' is always incremented by itself, which means it gets an automatic value and add 1 for each column.
   ID            Int             @id @default(autoincrement())
+  //PID or Personall ID is the code that is scanable by the card that each student or staff has access to.
   PID           String          @unique
+  //The following 4 shouldn't need explanation
   FirstName     String
   LastName      String
   Email         String          @unique
   PhoneNumber   String          @unique
+  //If the person is assigned personel at school, such as an admin or teacher etc.
   isPersonal    Boolean         @default(false)
-  Permissions   Permissions?
+  //Permission input, this finds available data in the permissions model and displays it for choosing. These are needed!
+  Permissions   Permissions[]
+  //Following will show details of either how many times a person has eaten or how many books a person has currently borrowed.
   Restaurant    Restaurant[]
   BorrowDetails BorrowDetails[]
 }
 
+//Model made specifically for students!
 model Students {
+  //The table assigned ID. DO NOT EDIT THIS!
   ID          Int    @id @default(autoincrement())
+  //PID or Personal Identification, scan barcode of card to access the code.
   PID         String @unique
+  //This shouldn't need explenation
   FirstName   String
   LastName    String
   Email       String @unique
   PhoneNumber String @unique
-
+  //Following will show details of either how many times a person has eaten or how many books a person has currently borrowed.
   Restaurant    Restaurant[]
   BorrowDetails BorrowDetails[]
 }
 
+model Login {
+  //Table that saves login details.
+  UserName    String  @unique
+  PassWord    String
+  PID         String  @unique
+}
 //Personel section ends here
 
 // Library borrowing system section starts here
 model Template {
+  //ID which is the ISBN of the item. It is key identifiable data, which means it's used to identify columns.
   ID           BigInt   @id
+  //Define an item. Shouldn't need explanation
   Name         String   @unique
   Price        Int
   Type         String
   Company      String
   RegisterDate DateTime
 
+  //Incase there is already an item that's related to the item in making, define it here.
+  //PS: THIS IS NOT NECESSARY (The ? tells us it's not necessary)
   Library Library? @relation("NameBookName")
 }
 
 model Library {
+  //The ID assigned by NTI for the item
   NTI_s_ID      Int    @unique
   ItemName      String @unique
   ISBN          BigInt @id @unique
@@ -70,41 +96,35 @@ model Library {
   Pages         Int
   Publish_Date  DateTime
 
-  NameBookName Template @relation(fields: [ItemName], references: [Name], name: "NameBookName")
+  //A relation that points towards to template and assigns values incase it's needed.
+  NameBookName Template? @relation(fields: [ItemName], references: [Name], name: "NameBookName")
   TemplateID   Int?
-
+  //Allows us to assign this item as borrowed in another model
   BorrowDetails BorrowDetails[]
 }
 
 model BorrowDetails {
+  //This shouldn't need explanation
+  NTI_ID     Int      @unique
   Student_ID String
   Staff_ID   String
-  NTI_ID     Int      @unique
   Date       DateTime
 
+  //Alows gathering data from already existing items from different tables.
   NTI_NTI_S      Library  @relation(fields: [NTI_ID], references: [NTI_s_ID])
   NTI_ID_Staff   Staff    @relation(fields: [Staff_ID], references: [PID])
   NTI_ID_Student Students @relation(fields: [Student_ID], references: [PID])
 }
-
 //Library borrowing system section ends here
 
 //Restaurant system section starts here
-
 model Restaurant {
+  //Model made for tracking restaurant visits, made for personel due to school rules...
   ID         Students @relation(fields: [PID], references: [ID])
   PID        Int      @unique
+  staffID    Int?
+  
   isPersonal Staff?   @relation(fields: [staffID], references: [ID])
 
   HaveEaten Boolean
-  staffID   Int?
 }
-
-model Login {
-  UserName    String  @unique
-  PassWord    String
-  PID         String  @unique
-}
-
-
-
