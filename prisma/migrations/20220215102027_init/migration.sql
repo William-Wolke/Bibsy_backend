@@ -1,12 +1,12 @@
 -- CreateTable
-CREATE TABLE `Administrators` (
+CREATE TABLE `Permissions` (
     `PID` VARCHAR(191) NOT NULL,
     `AccessToLibrary` BOOLEAN NOT NULL DEFAULT false,
     `AccessToResturant` BOOLEAN NOT NULL DEFAULT false,
     `AccessToUser` BOOLEAN NOT NULL DEFAULT false,
     `AccessToServer` BOOLEAN NOT NULL DEFAULT false,
 
-    UNIQUE INDEX `Administrators_PID_key`(`PID`)
+    UNIQUE INDEX `Permissions_PID_key`(`PID`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -41,25 +41,39 @@ CREATE TABLE `Students` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
-CREATE TABLE `Library` (
-    `ISBN` BIGINT NOT NULL,
-    `BookName` VARCHAR(191) NOT NULL,
-    `Author` VARCHAR(191) NOT NULL,
-    `IsAvailable` BOOLEAN NOT NULL,
-    `Quantity` INTEGER NOT NULL,
+CREATE TABLE `Template` (
+    `ID` BIGINT NOT NULL,
+    `Name` VARCHAR(191) NOT NULL,
+    `Price` INTEGER NOT NULL,
+    `Type` VARCHAR(191) NOT NULL,
+    `Company` VARCHAR(191) NOT NULL,
+    `RegisterDate` DATETIME(3) NOT NULL,
 
+    UNIQUE INDEX `Template_Name_key`(`Name`),
+    PRIMARY KEY (`ID`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Library` (
+    `NTI_s_ID` INTEGER NOT NULL,
+    `ItemName` VARCHAR(191) NOT NULL,
+    `ISBN` BIGINT NOT NULL,
+    `templateID` INTEGER NULL,
+
+    UNIQUE INDEX `Library_NTI_s_ID_key`(`NTI_s_ID`),
+    UNIQUE INDEX `Library_ItemName_key`(`ItemName`),
     UNIQUE INDEX `Library_ISBN_key`(`ISBN`),
-    UNIQUE INDEX `Library_BookName_key`(`BookName`)
+    PRIMARY KEY (`ISBN`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `BorrowDetails` (
-    `ISBN` BIGINT NOT NULL,
-    `Staff` VARCHAR(191) NOT NULL,
-    `Student` VARCHAR(191) NOT NULL,
-    `BorrowedDate` DATETIME(3) NOT NULL,
+    `Student_ID` VARCHAR(191) NOT NULL,
+    `Staff_ID` VARCHAR(191) NOT NULL,
+    `NTI_ID` INTEGER NOT NULL,
+    `Date` DATETIME(3) NOT NULL,
 
-    UNIQUE INDEX `BorrowDetails_ISBN_key`(`ISBN`)
+    UNIQUE INDEX `BorrowDetails_NTI_ID_key`(`NTI_ID`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -71,17 +85,30 @@ CREATE TABLE `Restaurant` (
     UNIQUE INDEX `Restaurant_PID_key`(`PID`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- AddForeignKey
-ALTER TABLE `Administrators` ADD CONSTRAINT `Administrators_PID_fkey` FOREIGN KEY (`PID`) REFERENCES `Staff`(`PID`) ON DELETE RESTRICT ON UPDATE CASCADE;
+-- CreateTable
+CREATE TABLE `Login` (
+    `UserName` VARCHAR(191) NOT NULL,
+    `PassWord` VARCHAR(191) NOT NULL,
+    `PID` VARCHAR(191) NOT NULL,
+
+    UNIQUE INDEX `Login_UserName_key`(`UserName`),
+    UNIQUE INDEX `Login_PID_key`(`PID`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
-ALTER TABLE `BorrowDetails` ADD CONSTRAINT `BorrowDetails_Staff_fkey` FOREIGN KEY (`Staff`) REFERENCES `Staff`(`PID`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `Permissions` ADD CONSTRAINT `Permissions_PID_fkey` FOREIGN KEY (`PID`) REFERENCES `Staff`(`PID`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `BorrowDetails` ADD CONSTRAINT `BorrowDetails_Student_fkey` FOREIGN KEY (`Student`) REFERENCES `Students`(`PID`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `Library` ADD CONSTRAINT `Library_ItemName_fkey` FOREIGN KEY (`ItemName`) REFERENCES `Template`(`Name`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `BorrowDetails` ADD CONSTRAINT `BorrowDetails_ISBN_fkey` FOREIGN KEY (`ISBN`) REFERENCES `Library`(`ISBN`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `BorrowDetails` ADD CONSTRAINT `BorrowDetails_Staff_ID_fkey` FOREIGN KEY (`Staff_ID`) REFERENCES `Staff`(`PID`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `BorrowDetails` ADD CONSTRAINT `BorrowDetails_Student_ID_fkey` FOREIGN KEY (`Student_ID`) REFERENCES `Students`(`PID`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `BorrowDetails` ADD CONSTRAINT `BorrowDetails_NTI_ID_fkey` FOREIGN KEY (`NTI_ID`) REFERENCES `Library`(`NTI_s_ID`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Restaurant` ADD CONSTRAINT `Restaurant_staffID_fkey` FOREIGN KEY (`staffID`) REFERENCES `Staff`(`ID`) ON DELETE SET NULL ON UPDATE CASCADE;

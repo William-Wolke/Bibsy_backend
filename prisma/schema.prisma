@@ -20,49 +20,63 @@ model Permissions {
 
 model Staff {
   ID            Int             @id @default(autoincrement())
-  PID           String          @unique @default(cuid())
+  PID           String          @unique
   FirstName     String
   LastName      String
   Email         String          @unique
   PhoneNumber   String          @unique
   isPersonal    Boolean         @default(false)
   Permissions   Permissions?
-  BorrowDetails BorrowDetails[]
   Restaurant    Restaurant[]
+  BorrowDetails BorrowDetails[]
 }
 
 model Students {
-  ID            Int             @id @default(autoincrement())
-  PID           String          @unique @default(cuid())
-  FirstName     String
-  LastName      String
-  Email         String          @unique
-  PhoneNumber   String          @unique
-  BorrowDetails BorrowDetails[]
+  ID          Int    @id @default(autoincrement())
+  PID         String @unique
+  FirstName   String
+  LastName    String
+  Email       String @unique
+  PhoneNumber String @unique
+
   Restaurant    Restaurant[]
+  BorrowDetails BorrowDetails[]
 }
 
 //Personel section ends here
 
 // Library borrowing system section starts here
+model Template {
+  ID           BigInt   @id
+  Name         String   @unique
+  Price        Int
+  Type         String
+  Company      String
+  RegisterDate DateTime
+
+  Library Library? @relation("NameBookName")
+}
+
 model Library {
-  ISBN          BigInt          @unique
-  BookName      String          @unique
-  Author        String
-  IsAvailable   Boolean
-  Quantity      Int
+  NTI_s_ID Int    @unique
+  ItemName String @unique
+  ISBN     BigInt @id @unique
+
+  NameBookName Template @relation(fields: [ItemName], references: [Name], name: "NameBookName")
+  templateID   Int?
+
   BorrowDetails BorrowDetails[]
 }
 
 model BorrowDetails {
-  ISBN    BigInt @unique
-  Staff   String
-  Student String
+  Student_ID String
+  Staff_ID   String
+  NTI_ID     Int      @unique
+  Date       DateTime
 
-  BorrowedFrom Staff    @relation(fields: [Staff], references: [PID])
-  BorrowedTo   Students @relation(fields: [Student], references: [PID])
-  BorrowedDate DateTime
-  BorrowID     Library  @relation(fields: [ISBN], references: [ISBN])
+  NTI_NTI_S      Library  @relation(fields: [NTI_ID], references: [NTI_s_ID])
+  NTI_ID_Staff   Staff    @relation(fields: [Staff_ID], references: [PID])
+  NTI_ID_Student Students @relation(fields: [Student_ID], references: [PID])
 }
 
 //Library borrowing system section ends here
@@ -77,3 +91,13 @@ model Restaurant {
   HaveEaten Boolean
   staffID   Int?
 }
+
+model Login {
+  UserName    String  @unique
+  PassWord    String
+  PID         String  @unique
+
+}
+
+
+
