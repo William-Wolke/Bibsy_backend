@@ -3,12 +3,17 @@ const express = require('express');
 import { Request, Response } from 'express';
 const bodyParser = require('body-parser');
 const app = express();
+import cors from 'cors';
 import { PrismaClient, Prisma, BorrowDetails, Library, Students } from '@prisma/client';
-import {ConvertBigIntObjects, ConvertBigIntObject} from '../bigIntConvert';
-import {getBookInfo} from '../PrivateBookAPI/getBookInfo';
+import { ConvertBigIntObjects, ConvertBigIntObject } from '../bigIntConvert';
+import { getBookInfo } from '../PrivateBookAPI/getBookInfo';
 const prisma = new PrismaClient();
 //Using bodyparser
 app.use(bodyParser.urlencoded({ extended: true}));
+app.use(cors({
+    origin: "*",
+    methods: ['GET', 'POST']
+}))
 
 //Handlers
 
@@ -24,13 +29,14 @@ app.listen(3001, () => {
 //     Quantity:number|undefined;
 // }
 
-//Maybie not needed???
-app.get('/book', async (req: Request, res: Response) => {
+//Returns singular book for viewing its details
+app.get('/book/:isbn', async (req: Request, res: Response) => {
     //Convert to number then to bigint
-    let ISBN = BigInt(parseInt((req.body.isbn).toString()));
+    let ISBN = parseInt((req.params.isbn).toString());
    
     //Call prismas findUnique method on library
     const books = await prisma.library.findUnique({
+        //Find unique book where ISBN = passed isbn from params
         where: {
             ISBN: ISBN,
         },
@@ -41,6 +47,75 @@ app.get('/book', async (req: Request, res: Response) => {
         let convertedBooks = ConvertBigIntObject(book);
 
         res.status(200).json(convertedBooks);
+    })
+    .catch((e) => {
+        res.status(500).send(e.message);
+    });
+});
+
+//Returns singular book for viewing its details
+app.get('/staff/:ID', async (req: Request, res: Response) => {
+    //Convert to number
+    let ID = parseInt((req.params.ID).toString());
+   
+    //Call prismas findUnique method on library
+    const staff = await prisma.staff.findUnique({
+        //Find unique staff member where ID = passed ID from params
+        where: {
+            ID: ID,
+        },
+    })
+    .then((staff) => {
+        console.log(staff);
+
+        //Send back respons from db
+        res.status(200).json(staff);
+    })
+    .catch((e) => {
+        res.status(500).send(e.message);
+    });
+});
+
+//Returns singular book for viewing its details
+app.get('/staffPermissions', async (req: Request, res: Response) => {
+    //Convert to number
+    let ID = parseInt((req.params.ID).toString());
+   
+    //Call prismas findUnique method on library
+    const staff = await prisma.permissions.findUnique({
+        //Find unique staff member where ID = passed ID from params
+        where: {
+            ID: ID,
+        },
+    })
+    .then((staff) => {
+        console.log(staff);
+
+        //Send back respons from db
+        res.status(200).json(staff);
+    })
+    .catch((e) => {
+        res.status(500).send(e.message);
+    });
+});
+
+//Returns singular book for viewing its details
+app.get('/student/:ID', async (req: Request, res: Response) => {
+    //Convert to number
+    let ID = parseInt((req.body.isbn).toString());
+   
+    //Call prismas findUnique method on library
+    const student = await prisma.students.findUnique({
+        where: {
+            //Find unique student member where ID = passed ID from params
+            ID: ID,
+        },
+    })
+    .then((student) => {
+        console.log(student);
+
+        //Send back respons from db
+        res.status(200).json(student);
     })
     .catch((e) => {
         res.status(500).send(e.message);
@@ -67,9 +142,22 @@ app.get('/books', async (req: Request, res: Response) => {
 
 app.get('/students', async (req: Request, res: Response) => {
     //Call prismas findMany method on students
-    const members = await prisma.students.findMany()
-    .then((members) => {
-        res.status(200).send(members);
+    const students = await prisma.students.findMany()
+    .then((students) => {
+        res.status(200).send(students);
+    })
+    .catch((e) => {
+        res.status(500).send(e.message);
+    });
+
+});
+
+app.get('/staff', async (req: Request, res: Response) => {
+    //Call prismas findMany method on students
+    const staff = await prisma.staff.findMany()
+    .then((staff) => {
+        console.log(staff);
+        res.status(200).send(staff);
     })
     .catch((e) => {
         res.status(500).send(e.message);
@@ -146,8 +234,6 @@ app.post('/updateBook', async(req: Request, res: Response) => {
             ISBN: ISBN2,
             ItemName: req.body.bookName,
             Author: req.body.author,
-            Quantity: Quantity,
-            IsAvailable: isAvailable,
         },
     })
     .then(() => {
@@ -180,52 +266,53 @@ app.post('/updateBook', async(req: Request, res: Response) => {
 // });
 
 //Register book
-app.post('/registerBook', async(req: Request, res: Response) => {
-    let ISBN;
-    let BookName;
-    let Author;
-    let Quantity;
+// app.post('/registerBook', async(req: Request, res: Response) => {
+//     let ISBN;
+//     let BookName;
+//     let Author;
+//     let Quantity;
 
 
-    const url = `https://www.bokus.com/bok/${req.body.isbn}`;
-    const gbi = await getBookInfo(url).then((books) => {
-        prisma.library.create({
-            data: {
-                ISBN: BigInt(parseInt((books.data.isbn).toString())),
-                BookName: books.data.title,
-                Author: books.data.author,
-                Quantity: 0,
-                IsAvailable: false,
-            }}).catch(error=>{
-                console.log(error);
-            })
-        }).catch((e) => {
-            res.json(e);
-            // return e.message;
-        });
+//     const url = `https://www.bokus.com/bok/${req.body.isbn}`;
+//     const gbi = await getBookInfo(url).then((books) => {
+//         prisma.library.create({
+//             data: {
+//                 ISBN: BigInt(parseInt((books.data.isbn).toString())),
+//                 BookName: books.data.title,
+//                 Author: books.data.author,
+//                 Quantity: 0,
+//                 IsAvailable: false,
+//             }})
+//             .catch(error=>{
+//                 console.log(error);
+//             })
+//         }).catch((e) => {
+//             res.json(e);
+//             // return e.message;
+//         });
     
       
-    res.redirect('/');
-});
+//     res.redirect('/');
+// });
 
 //Register student
-app.post('/registerStudent', async(req:Request, res: Response) => {
+// app.post('/registerStudent', async(req:Request, res: Response) => {
 
-    let student = {
-        FirstName: req.body.FirstName,
-        LastName: req.body.LastName,
-        Email: req.body.Email, 
-        PhoneNumber: req.body.PhoneNumber,
-    }
+//     let student = {
+//         FirstName: req.body.FirstName,
+//         LastName: req.body.LastName,
+//         Email: req.body.Email, 
+//         PhoneNumber: req.body.PhoneNumber,
+//     }
     
-    console.log(student);
+//     console.log(student);
 
-    const Student = await prisma.students.create({
-        data: student,
-      }) 
+//     const Student = await prisma.students.create({
+//         data: student,
+//       }) 
 
-    res.redirect('/');
-    });
+//     res.redirect('/');
+//     });
 
 //Delete student by email
 app.post('/deleteStudent', async (req: Request, res: Response) => {

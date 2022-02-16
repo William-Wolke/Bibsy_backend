@@ -41,6 +41,16 @@ CREATE TABLE `Students` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
+CREATE TABLE `Login` (
+    `UserName` VARCHAR(191) NOT NULL,
+    `PassWord` VARCHAR(191) NOT NULL,
+    `PID` VARCHAR(191) NOT NULL,
+
+    UNIQUE INDEX `Login_UserName_key`(`UserName`),
+    UNIQUE INDEX `Login_PID_key`(`PID`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
 CREATE TABLE `Template` (
     `ID` BIGINT NOT NULL,
     `Name` VARCHAR(191) NOT NULL,
@@ -78,9 +88,9 @@ CREATE TABLE `Library` (
 
 -- CreateTable
 CREATE TABLE `BorrowDetails` (
+    `NTI_ID` INTEGER NOT NULL,
     `Student_ID` VARCHAR(191) NOT NULL,
     `Staff_ID` VARCHAR(191) NOT NULL,
-    `NTI_ID` INTEGER NOT NULL,
     `Date` DATETIME(3) NOT NULL,
 
     UNIQUE INDEX `BorrowDetails_NTI_ID_key`(`NTI_ID`)
@@ -89,20 +99,10 @@ CREATE TABLE `BorrowDetails` (
 -- CreateTable
 CREATE TABLE `Restaurant` (
     `PID` INTEGER NOT NULL,
-    `HaveEaten` BOOLEAN NOT NULL,
     `staffID` INTEGER NULL,
+    `HaveEaten` BOOLEAN NOT NULL,
 
     UNIQUE INDEX `Restaurant_PID_key`(`PID`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- CreateTable
-CREATE TABLE `Login` (
-    `UserName` VARCHAR(191) NOT NULL,
-    `PassWord` VARCHAR(191) NOT NULL,
-    `PID` VARCHAR(191) NOT NULL,
-
-    UNIQUE INDEX `Login_UserName_key`(`UserName`),
-    UNIQUE INDEX `Login_PID_key`(`PID`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
