@@ -60,7 +60,7 @@ model Students {
 
 model Login {
   //Table that saves login details.
-  UserName    String  @unique
+  UserName    String  @unique @id
   PassWord    String
   PID         String  @unique
 }
