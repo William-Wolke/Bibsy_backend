@@ -2,6 +2,7 @@
 //Import modules
 import { 
     Request, 
+    response, 
     Response 
 } from 'express';
 
@@ -29,6 +30,8 @@ const express = require('express');
 const app = express();
 const nodePort = 2398;
 let bodyparsee = bodyParser.urlencoded({ extended: false});
+import axios from 'axios';
+
 
 app.use(bodyParser.urlencoded({ extended: false}));
 app.use(bodyParser.json())
@@ -81,17 +84,21 @@ app.post('/login',bodyparsee, async (req, res) => {
     let username = req.body.id;
     let Hash = MD5(req.body.pass);
 
-    
-    let dejan =()=>{
-        return FetchPass(username, Hash).then((response) => {
-            console.log("Error: " + response)
-            if(response == true){
-               res.redirect('/dashboard');
+    let dejan = () => {
+        return FetchPass(username, Hash)
+        .then((response) => {
+            if(response){
+            console.log(response)   
+            return ('/dashboard')
             }
         })
+        // .then((response) => {
+        //     console.log(response)
+        // })
     }
-     dejan();
-    res.send(req.body)
+    await dejan().then((response) => {
+        res.redirect('http://192.168.198.25:2398' + response)
+    })
 });
 // type bookinf={
 //     ISBN:number|undefined;
