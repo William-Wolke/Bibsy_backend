@@ -4,8 +4,6 @@ type NumberLibrary = {
     ISBN: Number;
     BookName: String;
     Author: String;
-    IsAvailable: Boolean;
-    Quantity: Number;
 }
 
 export const ConvertBigIntObjects = (books:Library[]) => {
@@ -15,18 +13,14 @@ export const ConvertBigIntObjects = (books:Library[]) => {
     books.map((book) => {
         //Decunstruct and parse object
         let ISBN = parseInt((books[0].ISBN).toString());
-        let BookName = books[0].BookName;
+        let BookName = books[0].ItemName;
         let Author = books[0].Author;
-        let IsAvailable = books[0].IsAvailable;
-        let Quantity = (books[0].Quantity);
 
         //Assembel object again
         let bookInfo = {
             ISBN: ISBN,
             BookName: BookName,
             Author: Author,
-            IsAvailable: IsAvailable,
-            Quantity: Quantity
         }
         //Push to array
         bookArray.push(bookInfo);
@@ -36,7 +30,7 @@ export const ConvertBigIntObjects = (books:Library[]) => {
 
 export const ConvertBigIntObject = (book:Library) => {
     //Library type with isbn as number instead of bigint
-    let newBook:NumberLibrary;
+    let newBook: NumberLibrary;
     
         //Decunstruct and parse object
         let ISBN = parseInt((book[0].ISBN).toString());
