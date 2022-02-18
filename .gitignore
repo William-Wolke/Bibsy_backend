@@ -3,7 +3,7 @@ node_modules
 .env
 
 ./prisma/schema.prisma
-
+prisma/migrations/
 src/PrivateBookAPI/getBookInfo.ts
 src/PrivateBookAPI/.DS_Store
 .DS_Store
