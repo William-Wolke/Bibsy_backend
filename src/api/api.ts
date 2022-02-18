@@ -18,18 +18,19 @@ import {
     ConvertBigIntObject
 } from '../bigIntConvert';
 import cors from 'cors';
-import { PrismaClient, Prisma, BorrowDetails, Library, Students } from '@prisma/client';
-import { ConvertBigIntObjects, ConvertBigIntObject } from '../bigIntConvert';
 //import { getBookInfo } from '../PrivateBookAPI/getBookInfo';
 import bCrypt from 'bcryptjs';
+
+
 const prisma = new PrismaClient();
 const bodyParser = require('body-parser');
 const express = require('express');
 const app = express();
-const nodePort = 2398;
+const nodePort = 3001;
 let bodyparsee = bodyParser.urlencoded({ extended: false});
 app.use(bodyParser.urlencoded({ extended: false}));
 app.use(bodyParser.json())
+
 app.use(cors({
     accept:'*',
     method:'POST, GET'
@@ -79,7 +80,7 @@ app.post('/login',bodyparsee, async (req, res) => {
   
        // console.log(response);
        
-    }))
+    }));
 
 
     // let userName = (req.body.id);
@@ -94,51 +95,29 @@ app.post('/login',bodyparsee, async (req, res) => {
 // }
 
 //Returns singular book for viewing its details
-// app.get('/book', async (req: Request, res: Response) => {
-//     console.log("hej");
-//     let numIsbn = Number(req.body.isbn);
-//     let bigIntIsbn = BigInt(numIsbn);
+app.get('/book/:ISBN', async (req: Request, res: Response) => {
+    let bigIntISBN = BigInt(parseInt((req.params.ISBN.toString())));
    
-//     const books = await prisma.library.findUnique({
-//         where: {
-//             ISBN: bigIntIsbn
-//         }
-//     })
-//     .then((book) => {
-//         console.log(book);
-//         //BigInt is not supported by json we have to convert to Number and then to object again... 🤬 
-//         let convertedBooks = ConvertBigIntObject(book);
+    const books = await prisma.library.findUnique({
+        where: {
+            ISBN: bigIntISBN,
+        },
+    })
+    .then((book) => {
+        console.log(book);
+        //BigInt is not supported by json we have to convert to Number and then to object again... 🤬 
+        let convertedBooks = ConvertBigIntObject(book);
 
 
-//         res.status(200).json(convertedBooks);
-//     })
-//     .catch((e) => {
-//         res.status(500).send(e.message);
-//     });
-// });
-//Returns singular book for viewing its details
-// app.get('/books', async (req: Request, res: Response) => {
-//     console.log("hej");
-//     let datum: Date = new Date();
-//     let month = new Date().getMonth() + 1;
-//     console.log(datum.getFullYear() + "/" + month + "/" +  datum.getDate());
-   
-//     const books = await prisma.library.findMany()
-
-//     .then((böcker) => {
-//         console.log(böcker);
-//         //BigInt is not supported by json we have to convert to Number and then to object again... 🤬 
-//         let convertedBooks = ConvertBigIntObjects(böcker);
-
-//         res.status(200).json(convertedBooks);
-//     })
-//     .catch((e) => {
-//         res.status(500).send(e.message);
-//     });
-// });
+        res.status(200).json(convertedBooks);
+    })
+    .catch((e) => {
+        res.status(500).send(e.message);
+    });
+});
 
 //Returns singular staff for viewing its details
-app.get('/staff/:ID', async (req: Request, res: Response) => {
+app.get('/staff/:PID', async (req: Request, res: Response) => {
 
     //Convert to number
     let PID = (req.params.PID).toString();
@@ -151,6 +130,7 @@ app.get('/staff/:ID', async (req: Request, res: Response) => {
         },
     })
     .then((staff) => {
+        console.log(staff);
 
         //Send back respons from db
         res.status(200).json(staff);
@@ -174,18 +154,18 @@ app.get('/staffPermissions/:PID', async (req: Request, res: Response) => {
             PID: PID,
         },
     })
-    .then((staff) => {
-        console.log(staff);
+    .then ((permission) => {
+        console.log(permission);
 
         //Send back respons from db
-        res.status(200).json(staff);
+        res.status(200).send(permission);
     })
     .catch((e) => {
         res.status(500).send(e.message);
     });
 });
 
-//Returns singular book for viewing its details
+//Returns singular student for viewing its details
 app.get('/student/:PID', async (req: Request, res: Response) => {
     //Convert to number
     let PID = (req.params.PID).toString();
@@ -248,38 +228,7 @@ app.get('/staff', async (req: Request, res: Response) => {
     .catch((e) => {
         res.status(500).send(e.message);
     });
-
-// app.get('/students', async (req, res) => {
-//     const members = await prisma.students.findMany()
-//     .then((members) => {
-//         res.status(200).send(members);
-//     })
-//     .catch((e) => {
-//         res.status(500).send(e.message);
-//     });
-
-// });
-
-// app.post('/updateStudent',(req, res) => {
-    
-//     //pass in data
-//     const updateUser = prisma.students.update({
-//         where: {
-//             Email: req.body.email
-//         },
-//         data: {
-//             FirstName: req.body.firstName,
-//             LastName: req.body.lastName,
-//             Email: req.body.email,
-//             PhoneNumber: req.body.phone,
-//         },
-//     })
-//     .then(() => {
-//         res.redirect('/');
-//     })
-//     .catch(() => {
-//         res.redirect('/');
-//     });
+});
 
 app.post('/updateStaff',async (req: Request, res: Response) => {
     console.log("Update staff");
@@ -355,38 +304,7 @@ app.post('/updatePermissions', async (req: Request, res: Response) => {
     .catch(() => {
         res.status(500);
     });
-
-// app.post('/updateBook',(req, res) => {
-//     let ISBN = BigInt(parseInt((req.body.isbn).toString()));
-//     let ISBN2 = BigInt(parseInt((req.body.isbn2).toString()));
-//     let Quantity = parseInt((req.body.amount).toString());
-//     let isAvailable = false;
-
-//     if(Quantity){
-//         isAvailable = true; 
-//     }
-//     else {
-//         isAvailable = false;
-//     }
-//     //pass in data
-//     const updateUser = prisma.library.update({
-//         where: {
-//             ISBN: ISBN
-//         },
-//         data: {
-//             ISBN: ISBN2,
-//             BookName: req.body.bookName,
-//             Author: req.body.author,
-//             Quantity: Quantity,
-//             IsAvailable: isAvailable,
-//         },
-//     })
-//     .then(() => {
-//         res.redirect('/');
-//     })
-//     .catch(() => {
-//         res.redirect('/');
-//     });
+});
 
 //Update book
 app.post('/updateBook', async (req: Request, res: Response) => {
@@ -422,7 +340,7 @@ app.post('/updateBook', async (req: Request, res: Response) => {
     .catch(() => {
         res.redirect('/');
     });
-// });
+});
 
 // app.post('/borrow',(req, res) => {
 //     let ntiId = req.body.ntiId;
