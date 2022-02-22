@@ -83,13 +83,24 @@ app.listen(nodePort, () => {
 app.post('/login',bodyparsee, async (req, res) => {
     let username = req.body.id;
     let Hash = MD5(req.body.pass);
-
+ 
     let dejan = () => {
         return FetchPass(username, Hash)
         .then((response) => {
+           
             if(response){
             console.log(response)   
-            return ('/dashboard')
+          
+                res.json({
+                  token: 'test123'
+                });
+            }
+            else {
+               res.json(
+                   {
+                       message :'Invalid credential'
+                   }
+               )
             }
         })
         // .then((response) => {
@@ -97,7 +108,8 @@ app.post('/login',bodyparsee, async (req, res) => {
         // })
     }
     await dejan().then((response) => {
-        res.redirect('http://192.168.198.25:2398' + response)
+       
+        // res.redirect('http://localhost:3000/dashboard')
     })
 });
 // type bookinf={
