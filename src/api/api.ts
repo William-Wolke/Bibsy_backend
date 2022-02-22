@@ -1,4 +1,3 @@
-
 //Import modules
 import { 
     Request, 
@@ -17,7 +16,7 @@ import {
 import {
     ConvertBigIntObjects, 
     ConvertBigIntObject,
-    ConvertBigIntTemplate
+    // ConvertBigIntTemplate
 } from '../bigIntConvert';
 import {
     SHA256,
@@ -30,8 +29,10 @@ const MD5 = require('md5');
 const express = require('express');
 const app = express();
 const nodePort = 3001;
+const link = "https://www.bokus.com/bok/";
 let bodyparsee = bodyParser.urlencoded({ extended: false});
 import axios from 'axios';
+import { getBookInfo } from '/Users/william.wolke/Downloads/WebScraper/src/index';
 
 
 app.use(bodyParser.urlencoded({ extended: false}));
@@ -97,8 +98,14 @@ app.post('/login',bodyparsee, async (req, res) => {
         //     console.log(response)
         // })
     }
-    await dejan().then((response) => {
+    await dejan()
+    .then((response) => {
+        res.status(200);
         res.redirect('http://192.168.198.25:2398' + response)
+    })
+    .catch((error) => {
+        res.status(418);
+        console.error(error);
     })
 });
 // type bookinf={
@@ -135,21 +142,13 @@ app.get('/book:ISBN', async (req: Request, res: Response) => {
 
 //Returns singular book for viewing its details
 app.get('/bookTemplate/:ISBN', async (req: Request, res: Response) => {
-    console.log("hej");
-    let numIsbn = Number(req.params.ISBN);
-    let bigIntIsbn = BigInt(numIsbn);
    
-    const template = await prisma.template.findUnique({
-        where: {
-            ID: bigIntIsbn,
-        },
-    })
+    getBookInfo(link + req.params.ISBN)
     .then((template) => {
         console.log(template);
         //BigInt is not supported by json we have to convert to Number and then to object again... 🤬 
-        let convertedTemplate = ConvertBigIntTemplate(template);
 
-        res.status(200).send(convertedTemplate);
+        res.status(200).send(template[0].data);
     })
     .catch((e) => {
         res.status(500).send(e.message);
@@ -316,7 +315,7 @@ app.post('/updateBook', async(req: Request, res: Response) => {
         //Lazy replace everything 
         data: {
             ISBN: ISBN2,
-            ItemName: req.body.bookName,
+            Title: req.body.bookName,
             Author: req.body.author,
         },
     })
@@ -356,30 +355,35 @@ app.post('/borrow',(req, res) => {
 app.post('/registerBook', async(req: Request, res: Response) => {
     
     let ISBN = BigInt(parseInt((req.body.isbn).toString()));
+    let NTI_ID = Number(req.body.id); 
+    let slicedDesc = req.body.desc.slice(0,190);
 
-    let book = {
+    let book: Library = {
         ISBN: ISBN,
         Title: req.body.title,
-        ItemName: req.body.title,
         Author: req.body.author,
-        NTI_s_ID: req.body.id,
+        NTI_s_ID: NTI_ID,
         Publisher: req.body.publisher,
         Language: req.body.lang,
         Cover: req.body.coverLink,
-        Description: req.body.desc,
+        Description: slicedDesc,
         Pages: req.body.pages,
         Publish_Date: req.body.date,
     };
-    if(!res){
-        console.log(res);
-        res.status(500);
-    }
-    else{
+
+    
         const Book = await prisma.library.create({
             data: book,
         })
-        res.status(200);
-    }
+        .then(() => {
+            res.status(200).json({message: "Success"});
+        })
+        .catch((err) => {
+            console.error(err)
+            res.status(500).json({message: "Failiure"});
+        });
+        
+    
 });
 
 // app.post('/registerStudent', async(req:Request, res:Response) => {

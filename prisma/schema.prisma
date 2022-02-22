@@ -68,26 +68,10 @@ model Login {
 //Personel section ends here
 
 // Library borrowing system section starts here
-model Template {
-  //ID which is the ISBN of the item. It is key identifiable data, which means it's used to identify columns.
-  ID           BigInt   @id
-  //Define an item. Shouldn't need explanation
-  Name         String   @unique
-  Price        Int
-  Type         String
-  Company      String
-  RegisterDate DateTime
-
-  //Incase there is already an item that's related to the item in making, define it here.
-  //PS: THIS IS NOT NECESSARY (The ? tells us it's not necessary)
-  Library Library? @relation("NameBookName")
-}
 
 model Library {
   //The ID assigned by NTI for the item
-  NTI_s_ID     Int      @unique
-  ItemName     String   @unique
-  ISBN         BigInt   @id @unique
+  
   Title        String   @unique
   Author       String
   Language     String
@@ -96,12 +80,10 @@ model Library {
   Cover        String   @unique
   Pages        Int
   Publish_Date DateTime
-
-  //A relation that points towards to template and assigns values incase it's needed.
-  NameBookName  Template?       @relation(fields: [ItemName], references: [Name], name: "NameBookName")
-  TemplateID    Int?
+NTI_s_ID     Int      @unique
+  ISBN         BigInt   @id @unique
   //Allows us to assign this item as borrowed in another model
-  BorrowDetails BorrowDetails[]
+  BorrowDetails BorrowDetails?
 }
 
 model BorrowDetails {
