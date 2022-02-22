@@ -1,9 +1,15 @@
-import { PrismaClient, Prisma, BorrowDetails, Library, Students } from '@prisma/client';
+import { PrismaClient, Prisma, BorrowDetails, Library, Students, Template } from '@prisma/client';
 
 type NumberLibrary = {
     ISBN: Number;
     BookName: String;
     Author: String;
+}
+
+type NumberTemplate = {
+    ID: Number;
+    Name: string;
+    Company: string;
 }
 
 export const ConvertBigIntObjects = (books:Library[]) => {
@@ -30,23 +36,39 @@ export const ConvertBigIntObjects = (books:Library[]) => {
 
 export const ConvertBigIntObject = (book:Library) => {
     //Library type with isbn as number instead of bigint
-    let newBook: NumberLibrary;
     
         //Decunstruct and parse object
         let ISBN = parseInt((book[0].ISBN).toString());
         let BookName = book[0].BookName;
-        let Author = book[0].Author;
-        let IsAvailable = book[0].IsAvailable;
-        let Quantity = (book[0].Quantity);
+        let Author = book.Author;
 
         //Assembel object again
-        let bookInfo = {
+        let bookInfo: NumberLibrary = {
             ISBN: ISBN,
             BookName: BookName,
             Author: Author,
-            IsAvailable: IsAvailable,
-            Quantity: Quantity
         }
         
         return bookInfo;
+}
+
+export const ConvertBigIntTemplate = (book:Template) => {
+    //Library type with isbn as number instead of bigint
+
+        //Decunstruct and parse object
+        let ID = parseInt((book.ID).toString());
+        let name = book.Name;
+        let company = book.Company;
+
+
+        //Assembel object again
+        let template: NumberTemplate = {
+            ID: ID,
+            Name: name,
+            Company: company,
+        }
+
+        console.log("MAMAMAMAM!");
+        
+        return template;
 }
